@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>חידון המשפחה 🎉</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- מסך בית -->
+<div id="screen-home" class="screen active">
+  <div class="center-card">
+    <div class="logo-emoji">🎉</div>
+    <h1>חידון המשפחה</h1>
+    <p class="subtitle">יום העצמאות תשפ"ו</p>
+    <div class="btn-group">
+      <button class="btn btn-yellow big" onclick="showScreen('screen-submit')">✏️ הוסף שאלה</button>
+      <button class="btn btn-blue big" onclick="showScreen('screen-join')">🎮 הצטרף למשחק</button>
+    </div>
+    <button class="btn-link" onclick="showScreen('screen-admin-login')">כניסת מנהל 🔐</button>
+  </div>
+</div>
+
+<!-- מסך הגשת שאלה -->
+<div id="screen-submit" class="screen">
+  <div class="top-bar">
+    <button class="back-btn" onclick="showScreen('screen-home')">→ חזרה</button>
+    <h2>הוספת שאלה</h2>
+  </div>
+  <div class="form-card">
+    <div class="form-group">
+      <label>השם שלך:</label>
+      <input type="text" id="submit-name" placeholder="שמך..." maxlength="20" class="input-field">
+    </div>
+    <div class="form-group">
+      <label>סוג השאלה:</label>
+      <div class="type-selector">
+        <button class="type-btn active" id="type-btn-multiple" onclick="setQuestionType('multiple')">
+          4 תשובות אפשריות
+        </button>
+        <button class="type-btn" id="type-btn-truefalse" onclick="setQuestionType('truefalse')">
+          נכון / לא נכון
+        </button>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>השאלה:</label>
+      <textarea id="submit-question" placeholder="כתוב את השאלה כאן..." rows="3" maxlength="200" class="input-field"></textarea>
+    </div>
+
+    <!-- אפשרויות לבחירה מרובה -->
+    <div id="options-section">
+      <label>האפשרויות <span class="hint-inline">(לחץ על העיגול ליד התשובה הנכונה)</span>:</label>
+      <div class="options-grid">
+        <div class="option-row option-red">
+          <input type="radio" name="correct" value="0" id="opt0">
+          <label for="opt0" class="radio-circle"></label>
+          <input type="text" class="option-input" id="option-text-0" placeholder="אפשרות 1" maxlength="100">
+        </div>
+        <div class="option-row option-blue">
+          <input type="radio" name="correct" value="1" id="opt1">
+          <label for="opt1" class="radio-circle"></label>
+          <input type="text" class="option-input" id="option-text-1" placeholder="אפשרות 2" maxlength="100">
+        </div>
+        <div class="option-row option-yellow">
+          <input type="radio" name="correct" value="2" id="opt2">
+          <label for="opt2" class="radio-circle"></label>
+          <input type="text" class="option-input" id="option-text-2" placeholder="אפשרות 3" maxlength="100">
+        </div>
+        <div class="option-row option-green">
+          <input type="radio" name="correct" value="3" id="opt3">
+          <label for="opt3" class="radio-circle"></label>
+          <input type="text" class="option-input" id="option-text-3" placeholder="אפשרות 4" maxlength="100">
+        </div>
+      </div>
+    </div>
+
+    <!-- נכון / לא נכון -->
+    <div id="tf-section" style="display:none;">
+      <label>התשובה הנכונה:</label>
+      <div class="tf-selector">
+        <label class="tf-btn tf-true">
+          <input type="radio" name="tf-correct" value="0"> ✓ נכון
+        </label>
+        <label class="tf-btn tf-false">
+          <input type="radio" name="tf-correct" value="1"> ✗ לא נכון
+        </label>
+      </div>
+    </div>
+
+    <div id="submit-error" class="error-msg" style="display:none;"></div>
+    <button class="btn btn-primary big" onclick="submitQuestion()">🚀 שלח שאלה!</button>
+    <p id="questions-count-label" class="hint-text"></p>
+  </div>
+</div>
+
+<!-- מסך אישור הגשה -->
+<div id="screen-submitted" class="screen">
+  <div class="center-card">
+    <div class="logo-emoji">✅</div>
+    <h2>השאלה נשלחה!</h2>
+    <p id="submitted-msg" class="subtitle"></p>
+    <div class="btn-group">
+      <button class="btn btn-yellow" onclick="resetSubmitForm(); showScreen('screen-submit')">הוסף שאלה נוספת</button>
+      <button class="btn btn-blue" onclick="showScreen('screen-home')">חזור לתפריט</button>
+    </div>
+  </div>
+</div>
+
+<!-- מסך הצטרפות למשחק -->
+<div id="screen-join" class="screen">
+  <div class="center-card">
+    <div class="logo-emoji">🎮</div>
+    <h2>הצטרף למשחק</h2>
+    <div class="form-group">
+      <input type="text" id="player-name" placeholder="השם שלך..." maxlength="20" class="input-field big-input"
+             onkeydown="if(event.key==='Enter') joinGame()">
+    </div>
+    <div id="join-error" class="error-msg" style="display:none;"></div>
+    <button class="btn btn-primary big" onclick="joinGame()">הצטרף!</button>
+    <button class="btn-link" onclick="showScreen('screen-home')">חזרה</button>
+  </div>
+</div>
+
+<!-- מסך לובי - ממתינים להתחלה -->
+<div id="screen-lobby" class="screen">
+  <div class="lobby-container">
+    <div class="logo-emoji small">⏳</div>
+    <h2>ממתינים להתחלה...</h2>
+    <p id="lobby-q-count" class="subtitle"></p>
+    <div class="players-grid" id="lobby-players"></div>
+    <p class="hint-text">המנהל יתחיל את המשחק בקרוב</p>
+  </div>
+</div>
+
+<!-- מסך שאלה -->
+<div id="screen-question" class="screen">
+  <div class="question-container">
+    <div class="question-header">
+      <span id="q-progress">שאלה 1 מתוך 10</span>
+      <div class="timer-wrap">
+        <svg class="timer-svg" viewBox="0 0 36 36">
+          <circle class="timer-track" cx="18" cy="18" r="15.9"/>
+          <circle id="timer-circle" class="timer-fill" cx="18" cy="18" r="15.9"/>
+        </svg>
+        <span id="timer-num" class="timer-num">20</span>
+      </div>
+      <span id="q-author" class="q-author"></span>
+    </div>
+    <div id="q-text" class="question-text"></div>
+    <div id="answer-buttons" class="answers-grid"></div>
+  </div>
+</div>
+
+<!-- מסך ממתין אחרי תשובה -->
+<div id="screen-waiting" class="screen">
+  <div class="center-card">
+    <div id="wait-icon" class="logo-emoji"></div>
+    <h2 id="wait-text"></h2>
+    <p class="hint-text">ממתינים לכולם...</p>
+    <div class="progress-wrap">
+      <div id="progress-bar" class="progress-bar"></div>
+    </div>
+    <p id="progress-label" class="hint-text"></p>
+  </div>
+</div>
+
+<!-- מסך חשיפת תשובה -->
+<div id="screen-answer" class="screen">
+  <div class="answer-container">
+    <div id="correct-box" class="correct-answer-box"></div>
+    <div id="my-result-box" class="my-result"></div>
+    <h3 class="leaderboard-title">🏅 טבלת ביניים</h3>
+    <div id="mid-leaderboard" class="leaderboard"></div>
+    <p class="hint-text" id="answer-hint">ממתין לשאלה הבאה...</p>
+  </div>
+</div>
+
+<!-- מסך סיום -->
+<div id="screen-final" class="screen">
+  <div class="final-container">
+    <div class="confetti" id="confetti"></div>
+    <div class="logo-emoji">🏆</div>
+    <h1>סיום המשחק!</h1>
+    <div id="final-leaderboard" class="leaderboard leaderboard-big"></div>
+    <button class="btn btn-blue" onclick="showScreen('screen-home')">חזרה לתפריט</button>
+  </div>
+</div>
+
+<!-- מסך כניסת מנהל -->
+<div id="screen-admin-login" class="screen">
+  <div class="center-card">
+    <div class="logo-emoji">🔐</div>
+    <h2>כניסת מנהל</h2>
+    <div class="form-group">
+      <input type="password" id="admin-code-input" placeholder="קוד מנהל..." class="input-field big-input"
+             onkeydown="if(event.key==='Enter') adminLogin()">
+    </div>
+    <div id="admin-login-error" class="error-msg" style="display:none;">קוד שגוי, נסה שוב</div>
+    <button class="btn btn-primary" onclick="adminLogin()">כניסה</button>
+    <button class="btn-link" onclick="showScreen('screen-home')">חזרה</button>
+  </div>
+</div>
+
+<!-- מסך לוח ניהול -->
+<div id="screen-admin" class="screen">
+  <div class="admin-wrap">
+    <div class="admin-header">
+      <h2>🎛️ לוח ניהול</h2>
+      <button class="btn btn-danger small" onclick="adminReset()">🗑️ איפוס הכל</button>
+    </div>
+
+    <div id="admin-collecting" class="admin-section">
+      <div class="admin-box">
+        <h3>📋 שאלות שהוגשו (<span id="admin-q-count">0</span>)</h3>
+        <div id="admin-questions-list" class="admin-questions"></div>
+      </div>
+      <div class="admin-box">
+        <h3>👥 שחקנים בלובי (<span id="admin-player-count">0</span>)</h3>
+        <div id="admin-players-list" class="players-grid small"></div>
+      </div>
+      <button id="btn-start" class="btn btn-primary big" onclick="adminStart()">
+        🎮 התחל משחק!
+      </button>
+      <p id="start-error" class="error-msg" style="display:none;">צריך לפחות שאלה אחת ושחקן אחד</p>
+    </div>
+
+    <div id="admin-game" class="admin-section" style="display:none;">
+      <div class="admin-box">
+        <h3 id="admin-q-label">שאלה...</h3>
+        <p id="admin-q-text" class="admin-question-text"></p>
+        <p id="admin-answered-label" class="hint-text"></p>
+      </div>
+      <button id="btn-next" class="btn btn-primary big" style="display:none;" onclick="adminNext()">
+        ⏭️ שאלה הבאה
+      </button>
+      <div id="admin-mid-leaderboard" class="leaderboard" style="display:none;"></div>
+    </div>
+
+    <div id="admin-finished" class="admin-section" style="display:none;">
+      <h3>🏆 תוצאות סופיות</h3>
+      <div id="admin-final-leaderboard" class="leaderboard leaderboard-big"></div>
+      <button class="btn btn-danger" onclick="adminReset()">🔄 משחק חדש</button>
+    </div>
+  </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

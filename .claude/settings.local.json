@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install *)",
+      "Bash(node server.js)",
+      "Bash(curl -s http://localhost:3000/)",
+      "Bash(curl -s -X POST http://localhost:3000/api/questions -H 'Content-Type: application/json' -d '{\"text\":\"מה בירת ישראל?\",\"type\":\"multiple\",\"options\":[\"תל אביב\",\"ירושלים\",\"חיפה\",\"באר שבע\"],\"correctAnswer\":1,\"submittedBy\":\"אריאל\"}')",
+      "Bash(pkill -f \"node server.js\")"
+    ]
+  }
+}
