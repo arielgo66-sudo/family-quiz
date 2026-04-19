@@ -53,27 +53,36 @@ socket.on('new-question', (q) => {
   lastAnswerResult = null;
   currentQTotal = q.total;
   currentQNumber = q.number;
-  showQuestion(q);
-  if (adminCode) updateAdminQuestion(q);
+  if (adminCode) {
+    updateAdminQuestion(q);
+  } else {
+    showQuestion(q);
+  }
 });
 
 socket.on('answer-result', (result) => {
   lastAnswerResult = result;
   myAnswered = true;
-  showWaiting(result);
+  if (!adminCode) showWaiting(result);
 });
 
 socket.on('reveal-answer', (data) => {
   stopTimer();
-  showAnswerReveal(data);
-  if (adminCode) showAdminReveal(data);
+  if (adminCode) {
+    showAdminReveal(data);
+  } else {
+    showAnswerReveal(data);
+  }
 });
 
 socket.on('game-finished', (leaderboard) => {
   stopTimer();
-  showFinal(leaderboard);
-  if (adminCode) showAdminFinished(leaderboard);
-  spawnConfetti();
+  if (adminCode) {
+    showAdminFinished(leaderboard);
+  } else {
+    showFinal(leaderboard);
+    spawnConfetti();
+  }
 });
 
 socket.on('game-reset', () => {
@@ -190,20 +199,22 @@ function renderLobbyPlayers(players) {
 
 let timerSeconds = 20;
 
+const OPTION_EMOJIS = ['🔺', '🔷', '⭕', '⬛'];
+
 function showQuestion(q) {
-  document.getElementById('q-progress').textContent = `שאלה ${q.number} מתוך ${q.total}`;
-  document.getElementById('q-author').textContent = `נשאלה ע"י ${q.submittedBy}`;
-  document.getElementById('q-text').textContent = q.text;
+  document.getElementById('q-progress').textContent = `שאלה ${q.number} מתוך ${q.total} 🎯`;
+  document.getElementById('q-author').textContent = '';
+  document.getElementById('q-text').textContent = '🤔  ' + q.text;
 
   const grid = document.getElementById('answer-buttons');
   grid.innerHTML = '';
 
   if (q.type === 'truefalse') {
     grid.style.gridTemplateColumns = '1fr 1fr';
-    ['נכון ✓', 'לא נכון ✗'].forEach((label, i) => {
+    [['✅', 'נכון'], ['❌', 'לא נכון']].forEach(([emoji, label], i) => {
       const btn = document.createElement('button');
       btn.className = `answer-btn ${i === 0 ? 'tf-true-btn' : 'tf-false-btn'}`;
-      btn.textContent = label;
+      btn.innerHTML = `<span class="btn-emoji">${emoji}</span>${label}`;
       btn.onclick = () => submitAnswer(i, grid);
       grid.appendChild(btn);
     });
@@ -212,7 +223,7 @@ function showQuestion(q) {
     q.options.forEach((opt, i) => {
       const btn = document.createElement('button');
       btn.className = `answer-btn color-${i}`;
-      btn.textContent = opt;
+      btn.innerHTML = `<span class="btn-emoji">${OPTION_EMOJIS[i]}</span>${opt}`;
       btn.onclick = () => submitAnswer(i, grid);
       grid.appendChild(btn);
     });
@@ -433,14 +444,12 @@ function updateAdminQuestion(q) {
 }
 
 function showAdminReveal(data) {
-  document.getElementById('admin-answered-label').textContent = `תשובה נכונה: ${data.correctText}`;
+  document.getElementById('admin-answered-label').textContent = `✅ תשובה נכונה: ${data.correctText}`;
   renderLeaderboard(data.leaderboard, 'admin-mid-leaderboard', 999);
   document.getElementById('admin-mid-leaderboard').style.display = 'flex';
-  if (!data.isLast) {
-    document.getElementById('btn-next').style.display = 'block';
-  } else {
-    document.getElementById('btn-next').style.display = 'none';
-  }
+  const btnNext = document.getElementById('btn-next');
+  btnNext.style.display = 'block';
+  btnNext.textContent = data.isLast ? '🏆 סיים משחק' : '⏭️ שאלה הבאה';
 }
 
 function adminNext() {
